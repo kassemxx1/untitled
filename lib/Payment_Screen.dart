@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +30,8 @@ class Payment_Screen extends StatefulWidget {
   static var price = '';
   static var Counter = '';
 
-  const Payment_Screen({Key? key}) : super(key: key);
+
+
 
   @override
   _Payment_ScreenState createState() => _Payment_ScreenState();
@@ -44,7 +46,11 @@ class _Payment_ScreenState extends State<Payment_Screen> {
 
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _device;
-
+  List<int> list = Payment_Screen.name.codeUnits;
+  String  converttoimage() {
+    Uint8List bytes = Uint8List.fromList(list);
+    return String.fromCharCodes(bytes);
+  }
 
   void getdevicefromecache() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
@@ -225,7 +231,8 @@ class _Payment_ScreenState extends State<Payment_Screen> {
     bluetooth.printCustom(' ' + DateTime.now().toString(), 1, 1);
     bluetooth.printCustom('  ------------------  ', 2, 1);
     bluetooth.printCustom( Payment_Screen.billnumb+' '+Payment_Screen.month+'/'+Payment_Screen.Year , 1, 1);
-    bluetooth.printCustom(  Payment_Screen.name , 2, 1);
+   // bluetooth.printCustom(  Payment_Screen.name , 2, 1);
+    bluetooth.printImage(converttoimage.toString());
     bluetooth.printCustom(  '  = 1 kilowatt ' +''+Payment_Screen.price , 1, 1);
     bluetooth.printCustom(Payment_Screen.old + ' Old Counter ', 1, 1);
     bluetooth.printCustom( Payment_Screen.New + ' New Counter ', 1, 1);
@@ -237,6 +244,8 @@ class _Payment_ScreenState extends State<Payment_Screen> {
     bluetooth.printCustom(  ' Than You ', 2, 1);
     bluetooth.printNewLine();
     bluetooth.printNewLine();
+    
+
 
 
   }
