@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:untitled/Bills_Screen.dart';
 import 'package:untitled/Counter_Screen.dart';
 import 'package:untitled/Login_Screen.dart';
+import 'package:untitled/Payment_Screen.dart';
+import 'package:untitled/Setting_Screen.dart';
 
 import 'Main_Screen.dart';
 void main() {
@@ -26,6 +29,9 @@ class _PowerState extends State<Power> {
         Login_Screen.id:(context) =>Login_Screen(),
         Main_Screen.id:(context) =>Main_Screen(),
         Counter_Screen.id:(context) =>Counter_Screen(),
+        Bills_Screen.id:(context) => Bills_Screen(),
+        Payment_Screen.id:(context) =>Payment_Screen(),
+        Setting_Secreen.id:(context) => Setting_Secreen(),
       },
     );
   }
