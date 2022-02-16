@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -14,6 +13,7 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 class Payment_Screen extends StatefulWidget {
   static const String id = 'Payment_Screen';
   static var ID = '';
@@ -211,7 +211,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
 
   }
 
-  Future<Uint8List> _generatePdf() async {
+  void _generatePdf() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
     final font = await PdfGoogleFonts.notoKufiArabicRegular();
@@ -222,7 +222,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
         build: (context) {
           return pw.Column(
             children: [
-              pw.Text('اشتراك الوفا'),
+              pw.Text('اشتراك الوفا', style: pw.TextStyle(font: font)),
               pw.Text('03215209   70215209'),
               pw.Text('07766765   76449856'),
               pw.Row(children: [
@@ -246,24 +246,24 @@ class _Payment_ScreenState extends State<Payment_Screen> {
               ),
               pw.Row(
                   children: [
-                    pw.Text( ' عداد سابق'),
+                    pw.Text( ' عداد سابق', style: pw.TextStyle(font: font)),
                     pw.Text(Payment_Screen.old),
                   ]
               ),
               pw.Row(
                   children: [
-                    pw.Text( ' عداد حالي'),
+                    pw.Text( ' عداد حالي', style: pw.TextStyle(font: font)),
                     pw.Text( Payment_Screen.New),
                   ]
               ),
               pw.Row(
                   children: [
-                    pw.Text( ' عداد حالي'),
+                    pw.Text( ' عداد حالي', style: pw.TextStyle(font: font)),
                     pw.Text( Payment_Screen.New),
                   ]
               ),pw.Row(
                   children: [
-                    pw.Text( ' الكمية'),
+                    pw.Text( ' الكمية', style: pw.TextStyle(font: font)),
                     pw.Text( Payment_Screen.Counter),
                   ]
               ),
@@ -271,13 +271,13 @@ class _Payment_ScreenState extends State<Payment_Screen> {
               pw.Text('------------------ '),
               pw.Row(
                   children: [
-                    pw.Text( '  المبلغ'),
+                    pw.Text( '  المبلغ', style: pw.TextStyle(font: font)),
                     pw.Text( Payment_Screen.Balance.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
                   ]
               ),
               pw.Row(
                   children: [
-                    pw.Text( '  دفعة'),
+                    pw.Text( '  دفعة', style: pw.TextStyle(font: font)),
                     pw.Text( AmountController.text.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
                   ]
               ),
@@ -286,9 +286,15 @@ class _Payment_ScreenState extends State<Payment_Screen> {
           );
         },
       ),
+
     );
 
-    return pdf.save();
+
+    final output = await getTemporaryDirectory();
+   // final file = File('${output.path}/example.pdf');
+
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save());
   }
   void invoices() {
     //SIZE
