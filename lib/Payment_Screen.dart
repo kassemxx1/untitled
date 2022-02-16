@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +9,8 @@ import 'package:untitled/Constants.dart';
 import 'Main_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
 class Payment_Screen extends StatefulWidget {
   static const String id = 'Payment_Screen';
   static var ID = '';
@@ -43,14 +44,11 @@ class _Payment_ScreenState extends State<Payment_Screen> {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   // List<BluetoothDevice> devices = [];
   // BluetoothDevice? selectedDevice;
-
+  ScreenshotController screenshotController = ScreenshotController();
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _device;
   List<int> list = Payment_Screen.name.codeUnits;
-  String  converttoimage() {
-    Uint8List bytes = Uint8List.fromList(list);
-    return String.fromCharCodes(bytes);
-  }
+
 
   void getdevicefromecache() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
@@ -109,7 +107,33 @@ class _Payment_ScreenState extends State<Payment_Screen> {
 
   }
 
+void converttoImage(String name) async {
+  final directory = (await getApplicationDocumentsDirectory ()).path; //from path_provide package
+  String tempPath = directory;
+  var container = Container(
+      padding: const EdgeInsets.all(30.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blueAccent, width: 5.0),
+        color: Colors.redAccent,
+      ),
+      child: Text(
+        name,
+        style: Theme.of(context).textTheme.headline6,
+      ));
 
+  screenshotController
+      .captureFromWidget(
+      InheritedTheme.captureAll(
+          context, Material(child: container)),
+      delay: Duration(milliseconds: 1))
+      .then((capturedImage) {
+
+  });
+  screenshotController.captureAndSave(
+      tempPath,fileName: 'kassem'
+  );
+
+}
 
   void getSumOfCounter() {
     if (int.parse(Payment_Screen.New) - int.parse(Payment_Screen.old) < 0) {
@@ -213,6 +237,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
   }
 
   void invoices() async{
+
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     //SIZE
     // 0- normal size text
@@ -232,7 +257,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
     bluetooth.printCustom('  ------------------  ', 2, 1);
     bluetooth.printCustom( Payment_Screen.billnumb+' '+Payment_Screen.month+'/'+Payment_Screen.Year , 1, 1);
    // bluetooth.printCustom(  Payment_Screen.name , 2, 1);
-    bluetooth.printImage(converttoimage.toString());
+    bluetooth.printImage('/directory/kassem');
     bluetooth.printCustom(  '  = 1 kilowatt ' +''+Payment_Screen.price , 1, 1);
     bluetooth.printCustom(Payment_Screen.old + ' Old Counter ', 1, 1);
     bluetooth.printCustom( Payment_Screen.New + ' New Counter ', 1, 1);
@@ -255,6 +280,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
   void initState() {
     getdevicefromecache();
     getSumOfCounter();
+    converttoImage(Payment_Screen.name);
     // TODO: implement initState
     super.initState();
   }
