@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -10,10 +9,6 @@ import 'package:untitled/Constants.dart';
 import 'Main_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
-import 'package:path_provider/path_provider.dart';
 class Payment_Screen extends StatefulWidget {
   static const String id = 'Payment_Screen';
   static var ID = '';
@@ -165,7 +160,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
         // });
 
         EasyLoading.dismiss();
-        _generatePdf();
+        invoices();
         Navigator
             .of(context)
             .pushReplacement(new MaterialPageRoute(builder: (BuildContext context) => Main_Screen()));
@@ -211,92 +206,8 @@ class _Payment_ScreenState extends State<Payment_Screen> {
 
   }
 
-  void _generatePdf() async {
+  void invoices() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
-    final font = await PdfGoogleFonts.notoKufiArabicRegular();
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.roll57,
-        build: (context) {
-          return pw.Column(
-            children: [
-              pw.Text('اشتراك الوفا', style: pw.TextStyle(font: font)),
-              pw.Text('03215209   70215209'),
-              pw.Text('07766765   76449856'),
-              pw.Row(children: [
-                pw.Text('collector:'),
-                pw.Text(_prefs.getString('username').toString()),
-              ]),
-              pw.Text(DateTime.now().toString()),
-              pw.Text(' ------------------ '),
-              pw.Row(
-                children: [
-                  pw.Text( Payment_Screen.billnumb),
-                  pw.Text( Payment_Screen.MonthAr),
-                ]
-              ),
-              pw.Text(Payment_Screen.name),
-              pw.Row(
-                  children: [
-                    pw.Text( '1 kilowatt ='),
-                    pw.Text( Payment_Screen.price),
-                  ]
-              ),
-              pw.Row(
-                  children: [
-                    pw.Text( ' عداد سابق', style: pw.TextStyle(font: font)),
-                    pw.Text(Payment_Screen.old),
-                  ]
-              ),
-              pw.Row(
-                  children: [
-                    pw.Text( ' عداد حالي', style: pw.TextStyle(font: font)),
-                    pw.Text( Payment_Screen.New),
-                  ]
-              ),
-              pw.Row(
-                  children: [
-                    pw.Text( ' عداد حالي', style: pw.TextStyle(font: font)),
-                    pw.Text( Payment_Screen.New),
-                  ]
-              ),pw.Row(
-                  children: [
-                    pw.Text( ' الكمية', style: pw.TextStyle(font: font)),
-                    pw.Text( Payment_Screen.Counter),
-                  ]
-              ),
-
-              pw.Text('------------------ '),
-              pw.Row(
-                  children: [
-                    pw.Text( '  المبلغ', style: pw.TextStyle(font: font)),
-                    pw.Text( Payment_Screen.Balance.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
-                  ]
-              ),
-              pw.Row(
-                  children: [
-                    pw.Text( '  دفعة', style: pw.TextStyle(font: font)),
-                    pw.Text( AmountController.text.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
-                  ]
-              ),
-
-            ],
-          );
-        },
-      ),
-
-    );
-
-
-    final output = await getTemporaryDirectory();
-   // final file = File('${output.path}/example.pdf');
-
-    await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save());
-  }
-  void invoices() {
     //SIZE
     // 0- normal size text
     // 1- only bold text
@@ -307,24 +218,23 @@ class _Payment_ScreenState extends State<Payment_Screen> {
     // 1- ESC_ALIGN_CENTER
     // 2- ESC_ALIGN_RIGHT
     bluetooth.printNewLine();
-    bluetooth.printCustom('  اشتراك الوفا  ', 3, 1);
-    bluetooth.printCustom(' بترو الشرق - محطة غبريس  ', 1, 1);
+    bluetooth.printCustom('  Alwaffa Power  ', 2, 1);
     bluetooth.printCustom('  03215209   70215209  ', 1, 1);
     bluetooth.printCustom('  07766765   76449856  ', 1, 1);
-    bluetooth.printCustom( ' '+' kassem abboud ' + '  اسم الجابي ', 1, 1);
+    bluetooth.printCustom( 'collector:${_prefs.getString('username')} ', 1, 1);
     bluetooth.printCustom(' ' + DateTime.now().toString(), 1, 1);
-    bluetooth.printCustom('  ------------------  ', 3, 1);
-    bluetooth.printCustom( Payment_Screen.billnumb + '  عن '+' '+Payment_Screen.MonthAr , 1, 1);
-    bluetooth.printCustom(  ' المشترك '+' '+Payment_Screen.name , 2, 1);
+    bluetooth.printCustom('  ------------------  ', 2, 1);
+    bluetooth.printCustom( Payment_Screen.billnumb+' '+Payment_Screen.month+'/'+Payment_Screen.Year , 1, 1);
+    bluetooth.printCustom(  Payment_Screen.name , 2, 1);
     bluetooth.printCustom(  '  = 1 kilowatt ' +''+Payment_Screen.price , 1, 1);
-    bluetooth.printCustom( ' '+Payment_Screen.old + '  عداد سابق ', 1, 1);
-    bluetooth.printCustom( ' '+Payment_Screen.New + '  عداد حالي ', 1, 1);
-    bluetooth.printCustom( ' '+Payment_Screen.Counter + '  الكمية ', 1, 1);
-    bluetooth.printCustom('  ------------------  ', 3, 1);
-    bluetooth.printCustom( ' '+Payment_Screen.Balance.toCurrencyString(thousandSeparator: ThousandSeparator.Comma) + '  المبلغ ', 3, 1);
-    bluetooth.printCustom( ' '+AmountController.text.toCurrencyString(thousandSeparator: ThousandSeparator.Comma) + '  دفعة ', 3, 1);
+    bluetooth.printCustom(Payment_Screen.old + ' Old Counter ', 1, 1);
+    bluetooth.printCustom( Payment_Screen.New + ' New Counter ', 1, 1);
+    bluetooth.printCustom( Payment_Screen.Counter + 'Quantity', 1, 1);
+    bluetooth.printCustom('  ------------------  ', 2, 1);
+    bluetooth.printCustom( ' '+Payment_Screen.Balance.toCurrencyString(thousandSeparator: ThousandSeparator.Comma) + ' Balance: ', 3, 1);
+    bluetooth.printCustom( ' '+AmountController.text.toCurrencyString(thousandSeparator: ThousandSeparator.Comma) + 'Pay: ', 3, 1);
     bluetooth.printNewLine();
-    bluetooth.printCustom(  '  نشكر تعاونكم ', 3, 1);
+    bluetooth.printCustom(  ' Than You ', 2, 1);
     bluetooth.printNewLine();
     bluetooth.printNewLine();
 
