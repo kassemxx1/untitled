@@ -27,35 +27,66 @@ class BlocPro extends Cubit<BlocState> {
     Main_Screen.suggestions.clear();
     Main_Screen.loading = true;
     var url = Uri.parse(UrlHeroku.toString() + 'getallclientcounter');
-    var response = await http.get(url);
-    var data = json.decode(response.body);
-    for (var i in data['recordsets'][0]) {
-      var id = i['clientcode'].toString();
-      var name = i['clientName'].toString();
-      var address = i['address'].toString();
-      var box = i['boxcode'].toString();
-      var phone = i['smsmobile'].toString();
-      var areacode = i['areacode'].toString();
+    try{
 
-      clientdesc.add({
-        'id': id,
-        'name': name,
-        'address': address,
-        'box': box,
-        'phone': phone,
-        'areacode': areacode,
-      });
-    }
-    _prefs.setString('lastupdate', DateTime.now().toString());
-    _prefs.remove('allclients');
-    _prefs.setString('allclients', json.encode(clientdesc));
-    _prefs.setBool('first', false);
-    Main_Screen.lastUpdate = formatDate(
+      var response = await http.get(url);
+      var data = json.decode(response.body);
+      if (data['rowsAffected'][0] >0){
+        for (var i in data['recordsets'][0]) {
+          var id = i['clientcode'].toString();
+          var name = i['clientName'].toString();
+          var address = i['address'].toString();
+          var box = i['boxcode'].toString();
+          var phone = i['smsmobile'].toString();
+          var areacode = i['areacode'].toString();
+
+          clientdesc.add({
+            'id': id,
+            'name': name,
+            'address': address,
+            'box': box,
+            'phone': phone,
+            'areacode': areacode,
+          });
+        }
+        _prefs.setString('lastupdate', DateTime.now().toString());
+        _prefs.remove('allclients');
+        _prefs.setString('allclients', json.encode(clientdesc));
+        _prefs.setBool('first', false);
+        Main_Screen.lastUpdate = formatDate(
             DateTime.parse(_prefs.getString('lastupdate').toString()),
             [hh, ':', nn, ' ', dd, '-', mm, '-', yyyy]) +
-        ': آخر تحديث';
-    EasyLoading.dismiss();
-    Main_Screen.loading = false;
+            ': آخر تحديث';
+        EasyLoading.dismiss();
+        Main_Screen.loading = false;
+      }
+      else{
+        Fluttertoast.showToast(
+            msg: "not allowed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.grey,
+            textColor: Colors.white,
+            fontSize: 16.0);
+
+        EasyLoading.dismiss();
+      }
+
+    }
+    catch(err){
+      Fluttertoast.showToast(
+          msg: "error",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.grey,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      EasyLoading.dismiss();
+    }
+
     emit(getallclientcounterState());
   }
 //get the time of las update
@@ -251,7 +282,7 @@ class BlocPro extends Cubit<BlocState> {
           EasyLoading.dismiss();
         }
       }
-      print(data['rowsAffected'][0]);
+
       if (data['rowsAffected'][0].toString() == '0') {
         Fluttertoast.showToast(
             msg: "Completed or not allowed",

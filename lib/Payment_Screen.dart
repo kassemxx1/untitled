@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +11,9 @@ import 'package:untitled/Constants.dart';
 import 'Main_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 class Payment_Screen extends StatefulWidget {
   static const String id = 'Payment_Screen';
   static var ID = '';
@@ -160,7 +165,7 @@ class _Payment_ScreenState extends State<Payment_Screen> {
         // });
 
         EasyLoading.dismiss();
-        invoices();
+        _generatePdf();
         Navigator
             .of(context)
             .pushReplacement(new MaterialPageRoute(builder: (BuildContext context) => Main_Screen()));
@@ -205,59 +210,86 @@ class _Payment_ScreenState extends State<Payment_Screen> {
     }
 
   }
-//   Future<void> PrintPDf() async {
-//     SharedPreferences _prefs = await SharedPreferences.getInstance();
-//     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
-//     final font = await PdfGooglexSansArabicRegular();
-//     // final pdf = pw.Document();
-//
-//     pdf.addPage(
-//       pw.Page(
-//         pageFormat: PdfPageFormat.roll80,
-//         build: (pw.Context context) => pw.Center(
-//           child: pw.Column(children: [
-//             pw.Row(
-//               children: [
-//                 pw.Text('Collector',),
-//                 pw.Text(_prefs.getString('user').toString())
-//               ]
-//             ),
-//             pw.Row(
-//                 children: [
-//                   pw.Text('Invoice Number',),
-//                   pw.Text(Payment_Screen.billnumb)
-//                 ]
-//             ),
-//             pw.Row(
-//                 children: [
-//                   pw.Text('Client Name',),
-//                   pw.Text(Payment_Screen.name)
-//                 ]
-//             ),
-//             pw.Row(
-//                 children: [
-//                   pw.Text('Month',),
-//                   pw.Text(Payment_Screen.MonthAr)
-//                 ]
-//             ),
-//
-//
-//
-//           ]),
-//         ),
-//       ),
-//     );
-//     final output = await getTemporaryDirectory();
-//     final file = File('${output.path}/example.pdf');
-// //   await file.writeAsBytes(await pdf.save());
-//   //  await Printing.sharePdf(bytes: await pdf.save(), filename: 'example.pdf');
-//      await Printing.layoutPdf(
-//          onLayout: (PdfPageFormat format) async => pdf.save());
-//
-//     // await PdfPreview(
-//     //    build: (format) => pdf.save(),
-//     //  );
-//   }
+
+  Future<Uint8List> _generatePdf() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
+    final font = await PdfGoogleFonts.notoKufiArabicRegular();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.roll57,
+        build: (context) {
+          return pw.Column(
+            children: [
+              pw.Text('اشتراك الوفا'),
+              pw.Text('03215209   70215209'),
+              pw.Text('07766765   76449856'),
+              pw.Row(children: [
+                pw.Text('collector:'),
+                pw.Text(_prefs.getString('username').toString()),
+              ]),
+              pw.Text(DateTime.now().toString()),
+              pw.Text(' ------------------ '),
+              pw.Row(
+                children: [
+                  pw.Text( Payment_Screen.billnumb),
+                  pw.Text( Payment_Screen.MonthAr),
+                ]
+              ),
+              pw.Text(Payment_Screen.name),
+              pw.Row(
+                  children: [
+                    pw.Text( '1 kilowatt ='),
+                    pw.Text( Payment_Screen.price),
+                  ]
+              ),
+              pw.Row(
+                  children: [
+                    pw.Text( ' عداد سابق'),
+                    pw.Text(Payment_Screen.old),
+                  ]
+              ),
+              pw.Row(
+                  children: [
+                    pw.Text( ' عداد حالي'),
+                    pw.Text( Payment_Screen.New),
+                  ]
+              ),
+              pw.Row(
+                  children: [
+                    pw.Text( ' عداد حالي'),
+                    pw.Text( Payment_Screen.New),
+                  ]
+              ),pw.Row(
+                  children: [
+                    pw.Text( ' الكمية'),
+                    pw.Text( Payment_Screen.Counter),
+                  ]
+              ),
+
+              pw.Text('------------------ '),
+              pw.Row(
+                  children: [
+                    pw.Text( '  المبلغ'),
+                    pw.Text( Payment_Screen.Balance.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
+                  ]
+              ),
+              pw.Row(
+                  children: [
+                    pw.Text( '  دفعة'),
+                    pw.Text( AmountController.text.toCurrencyString(thousandSeparator: ThousandSeparator.Comma)),
+                  ]
+              ),
+
+            ],
+          );
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
   void invoices() {
     //SIZE
     // 0- normal size text
