@@ -23,11 +23,15 @@ class Login_Screen extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: ListView(
                 children: [
-                  Text(
-                    '                          ISC-Power',
-                    style: TextStyle(
-                      fontSize: 30,
-                      decoration: TextDecoration.underline,
+                  Hero(
+
+                    tag: 'test',
+                    child: Text(
+                      '                          ISC-Power',
+                      style: TextStyle(
+                        fontSize: 30,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                   Text(
@@ -54,14 +58,14 @@ class Login_Screen extends StatelessWidget {
                           border: OutlineInputBorder(),
                           suffixIcon: UserController.text.isEmpty
                               ? Container(
-                                  width: 0,
-                                )
+                            width: 0,
+                          )
                               : IconButton(
-                                  onPressed: () {
-                                    UserController.clear();
-                                  },
-                                  icon: Icon(Icons.close),
-                                ),
+                            onPressed: () {
+                              UserController.clear();
+                            },
+                            icon: Icon(Icons.close),
+                          ),
                         ),
                         keyboardType: TextInputType.name,
                         onChanged: (value) {},
@@ -80,14 +84,14 @@ class Login_Screen extends StatelessWidget {
                           border: OutlineInputBorder(),
                           suffixIcon: PassController.text.isEmpty
                               ? Container(
-                                  width: 0,
-                                )
+                            width: 0,
+                          )
                               : IconButton(
-                                  onPressed: () {
-                                    PassController.clear();
-                                  },
-                                  icon: Icon(Icons.close),
-                                ),
+                            onPressed: () {
+                              PassController.clear();
+                            },
+                            icon: Icon(Icons.close),
+                          ),
                         ),
                         keyboardType: TextInputType.name,
                         onChanged: (value) {},
@@ -106,6 +110,7 @@ class Login_Screen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
+
                         cubit.Login(
                             UserController.text, PassController.text, context);
                       },

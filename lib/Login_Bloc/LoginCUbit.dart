@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:untitled/Bloc%20Provider/Bloc_State.dart';
 import 'package:untitled/Login_Bloc/Login_States.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
@@ -36,7 +37,7 @@ class LoginCubit extends Cubit<LoginState> {
           },
           body: json.encode(bbb));
       var data = json.decode(response.body);
-      if (data['recordset'][0].length > 0) {
+      if (data['rowsAffected'][0] > 0) {
         Fluttertoast.showToast(
             msg: "Success",
             toastLength: Toast.LENGTH_SHORT,
@@ -64,7 +65,7 @@ class LoginCubit extends Cubit<LoginState> {
             cont,
             new MaterialPageRoute(
                 builder: (BuildContext context) => new Main_Screen()));
-      } else if (data['recordset'][0] == null) {
+      } else if (data['rowsAffected'][0] == 0) {
         Fluttertoast.showToast(
             msg: "Wrong",
             toastLength: Toast.LENGTH_SHORT,
@@ -88,6 +89,9 @@ class LoginCubit extends Cubit<LoginState> {
     }
     emit(LoginFunc());
   }
+
+
+
 
 
 }

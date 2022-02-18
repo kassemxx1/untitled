@@ -11,3 +11,6 @@ class getallbillsState extends BlocState{}
 class getbillsuggestionState extends BlocState{}
 class setInfobillState extends BlocState{}
 class getBillState extends BlocState{}
+class setvalidatefalseState extends BlocState{}
+class setvalidatetrueState extends BlocState{}
+class gettotalcounteredState extends BlocState{}

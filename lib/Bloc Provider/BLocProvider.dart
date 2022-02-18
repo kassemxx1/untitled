@@ -15,6 +15,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class BlocPro extends Cubit<BlocState> {
   BlocPro() : super(initState());
+
   static BlocPro get(BuildContext context) {
     return BlocProvider.of(context);
   }
@@ -60,6 +61,7 @@ class BlocPro extends Cubit<BlocState> {
         EasyLoading.dismiss();
         Main_Screen.loading = false;
       }
+
       else{
         Fluttertoast.showToast(
             msg: "not allowed",
@@ -86,6 +88,7 @@ class BlocPro extends Cubit<BlocState> {
 
       EasyLoading.dismiss();
     }
+    print(_prefs.getString('allclients'));
 
     emit(getallclientcounterState());
   }
@@ -123,49 +126,53 @@ class BlocPro extends Cubit<BlocState> {
       }
     }
     Counter_Screen.SearchController.text = ' ';
+    Counter_Screen.Value='';
     Counter_Screen.SearchController.clear();
     emit(getsuggestionState());
   }
 // get the months number
   void getmonth() async {
-    Main_Screen.selectedmonths.clear();
-    EasyLoading.show();
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
     var url = Uri.parse(UrlHeroku + 'getmonth');
     var response = await http.get(url);
     var data = json.decode(response.body);
-    if (data['recordsets'][0].length > 0) {
+    if (data['rowsAffected'][0] > 0) {
       for (var i in data['recordsets'][0]) {
-        Main_Screen.selectedmonths.add(i['schCtrNbr'].toString() +
-            ':' +
-            i['ctrMonth'].toString() +
-            '-' +
-            i['MonthAr'].toString() +
-            '-' +
-            i['ctrYear'].toString());
+        _prefs.setString('monthnumber', i['ctrMonth'].toString());
       }
-      EasyLoading.dismiss();
-    } else {
-      Main_Screen.selectedmonths.add('no record');
-      EasyLoading.dismiss();
     }
-    EasyLoading.dismiss();
-
     emit(getmonthSTate());
   }
 //get all info for selected value to enter the new counter
   void GetInfo(String value, String Type) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    var Clients = json.decode(_prefs.getString('allclients').toString());
     EasyLoading.show();
     Counter_Screen.TempList.clear();
     setcontname(String n) {
       var n = TextEditingController();
       return n;
     }
+    String getphone(String idd){
+
+      for (var i in Clients){
+        if (i['id']==idd){
+          print(i['phone']);
+          return i['phone'];
+
+        }
+        else{
+          return '';
+        }
+      }
+      return '';
+    }
 
     var url = Uri.parse(UrlHeroku + 'getcounters');
     Map<String, dynamic> bbb = {
       'Option': Type == 'box' ? 2 : 1,
       'CodeId': Type == 'name' ? Counter_Screen.ID : Counter_Screen.Value,
-      'month': 1,
+      'month': int.tryParse(_prefs.getString('monthnumber').toString()),
     };
     try {
       var response = await http.post(url,
@@ -184,6 +191,8 @@ class BlocPro extends Cubit<BlocState> {
             setcontname(
                 'controller' + Counter_Screen.Clients.indexOf(i).toString()),
             false,
+            getphone(i['clientcode'].toString()),
+
           ));
           Fluttertoast.showToast(
               msg: "success",
@@ -239,11 +248,24 @@ class BlocPro extends Cubit<BlocState> {
   //get all the clients not filled counter
   void getnotfilled() async {
     EasyLoading.show();
-
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    var Clients = json.decode(_prefs.getString('allclients').toString());
     Counter_Screen.TempList.clear();
     setcontname(String n) {
       var n = TextEditingController();
       return n;
+    }
+    String getphone(String idd){
+
+      for (var i in Clients){
+        if (i['id']==idd){
+          return i['phone'];
+        }
+        else{
+          return '';
+        }
+      }
+      return '';
     }
 
     var url = Uri.parse(UrlHeroku.toString() + 'getcounters');
@@ -269,6 +291,7 @@ class BlocPro extends Cubit<BlocState> {
             setcontname(
                 'controller' + Counter_Screen.Clients.indexOf(i).toString()),
             false,
+            getphone(i['clientcode'].toString()),
           ));
           Fluttertoast.showToast(
               msg: "success",
@@ -309,8 +332,42 @@ class BlocPro extends Cubit<BlocState> {
     emit(getNotFilledState());
   }
 
-////////////////////bills///////////////////////////////////////////////////
+  void setvalidatefalse(bool validate){
+    validate == false;
+    emit(setvalidatefalseState());
+  }
+  void setvalidatetrue(bool validate){
+    validate == true;
+    emit(setvalidatetrueState());
+  }
+  ///////////////////////////////////////////////////////////////////////////
+  void getrecords(int option) async{
+    var url = Uri.parse(UrlHeroku + 'getcounters');
+    try {
+      Map<String, dynamic> bbb = {
+        'id':'',
+        'month':1,
+        'Option':option,
 
+      };
+      var response = await http.post(url,
+          headers: <String, String>{
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          },
+          body: json.encode(bbb));
+      var data = json.decode(response.body);
+      print(data);
+      for(var i in data['recordsets'][0]){
+            Main_Screen.counter = i['Countred'];
+            Main_Screen.totalcounter=i['ClientCount'];
+      }
+    }
+    catch (err){
+      print(err);
+    }
+   emit(initState());
+  }
+////////////////////bills///////////////////////////////////////////////////
   //Get the info of all bills
   void getallBills() async {
     var clientdesc = [];
